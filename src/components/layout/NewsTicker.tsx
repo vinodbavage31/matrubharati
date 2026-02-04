@@ -9,16 +9,16 @@ const NewsTicker = () => {
   ];
 
   return (
-    <div className="bg-secondary text-white py-2 overflow-hidden mt-[88px] md:mt-[128px]">
+    <div className="fixed top-[80px] md:top-[120px] left-0 right-0 z-40 bg-secondary text-white py-2 overflow-hidden shadow-md">
       <div className="container mx-auto px-4 flex items-center">
-        <div className="flex items-center gap-2 bg-foreground text-background px-3 py-1 rounded-full shrink-0 mr-4">
-          <Bell className="h-4 w-4" />
-          <span className="font-semibold text-sm">UPDATES</span>
+        <div className="flex items-center gap-2 bg-foreground text-background px-2 sm:px-3 py-1 rounded-full shrink-0 mr-3 sm:mr-4">
+          <Bell className="h-3 w-3 sm:h-4 sm:w-4" />
+          <span className="font-semibold text-xs sm:text-sm">UPDATES</span>
         </div>
         <div className="overflow-hidden flex-1">
-          <div className="animate-ticker whitespace-nowrap flex gap-16">
-            {[...announcements, ...announcements].map((text, index) => (
-              <span key={index} className="font-medium">
+          <div className="ticker-scroll whitespace-nowrap flex gap-8 sm:gap-16">
+            {[...announcements, ...announcements, ...announcements].map((text, index) => (
+              <span key={index} className="font-medium text-sm sm:text-base">
                 {text}
               </span>
             ))}

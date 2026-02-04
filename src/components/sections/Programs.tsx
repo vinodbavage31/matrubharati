@@ -42,13 +42,14 @@ const Programs = () => {
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="inline-block px-4 py-1 bg-accent/20 text-accent rounded-full text-sm font-semibold mb-4">
+          <div className="accent-line mx-auto mb-6" />
+          <span className="inline-block px-4 py-2 bg-accent/20 text-accent rounded-full text-sm font-bold uppercase tracking-wider mb-4">
             Competitive Exam Training
           </span>
           <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
             Specialized <span className="text-accent">Entrance Exam</span> Preparation
           </h2>
-          <p className="text-primary-foreground/80 text-lg">
+          <p className="text-primary-foreground/80 text-lg leading-relaxed">
             We specialize in training Class 5th students for prestigious entrance examinations, 
             with our expert faculty guiding students to success.
           </p>

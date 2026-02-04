@@ -28,10 +28,10 @@ const Footer = () => {
           {/* Brand Column */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-3 mb-6">
-              <img src={logo} alt="Matru Bharati" className="h-16 w-auto bg-white rounded-full p-1" />
+              <img src={logo} alt="Matru Bharati" className="h-20 w-auto bg-white rounded-full p-1" />
               <div>
                 <h3 className="font-serif text-xl font-bold">Matru Bharati</h3>
-                <p className="text-sm text-primary-foreground/70">School & Coaching Center</p>
+                <p className="text-sm text-primary-foreground/70">Coaching Classes</p>
               </div>
             </div>
             <p className="text-primary-foreground/80 mb-6 leading-relaxed">

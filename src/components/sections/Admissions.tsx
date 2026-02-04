@@ -71,7 +71,7 @@ const Admissions = () => {
               Get in Touch
             </span>
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-6">
-              Begin Your Child's <span className="text-primary">Success Journey</span>
+              Begin Your Child's <span className="text-secondary">Success Journey</span>
             </h2>
             <p className="text-muted-foreground mb-8 leading-relaxed">
               Take the first step towards your child's bright future. Contact us for admission enquiries, 

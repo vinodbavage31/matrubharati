@@ -103,8 +103,8 @@ const WhyChooseUs = () => {
               className="group bg-card rounded-xl p-6 shadow-soft card-hover border border-border"
               style={{ animationDelay: `${index * 0.05}s` }}
             >
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-secondary/10 transition-colors">
-                <feature.icon className="h-6 w-6 text-primary group-hover:text-secondary transition-colors" />
+              <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-accent/10 transition-colors">
+                <feature.icon className="h-6 w-6 text-secondary group-hover:text-accent transition-colors" />
               </div>
               <h3 className="font-serif text-lg font-semibold text-foreground mb-2">
                 {feature.title}

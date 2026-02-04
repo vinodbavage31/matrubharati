@@ -45,11 +45,11 @@ const Facilities = () => {
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="inline-block px-4 py-1 bg-primary/10 text-primary rounded-full text-sm font-semibold mb-4">
+          <span className="inline-block px-4 py-1 bg-secondary/10 text-secondary rounded-full text-sm font-semibold mb-4">
             Our Facilities
           </span>
           <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-            A <span className="text-primary">Nurturing Environment</span> for Growth
+            A <span className="text-secondary">Nurturing Environment</span> for Growth
           </h2>
           <p className="text-muted-foreground text-lg">
             We provide world-class facilities ensuring students have everything they need 
@@ -65,10 +65,10 @@ const Facilities = () => {
               className="bg-card rounded-2xl p-8 shadow-soft card-hover border border-border overflow-hidden relative group"
             >
               {/* Accent bar */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-secondary to-accent" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-secondary via-accent to-secondary" />
               
-              <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <facility.icon className="h-7 w-7 text-primary" />
+              <div className="w-14 h-14 bg-secondary/10 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <facility.icon className="h-7 w-7 text-secondary" />
               </div>
               
               <h3 className="font-serif text-xl font-bold text-foreground mb-3">

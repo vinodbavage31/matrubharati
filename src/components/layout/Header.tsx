@@ -18,7 +18,7 @@ const Header = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
       {/* Top bar */}
-      <div className="bg-primary text-primary-foreground py-2 hidden md:block">
+      <div className="bg-foreground text-background py-2 hidden md:block">
         <div className="container mx-auto px-4 flex justify-between items-center text-sm">
           <div className="flex items-center gap-6">
             <a href="tel:9611215121" className="flex items-center gap-2 hover:text-accent transition-colors">
@@ -44,7 +44,7 @@ const Header = () => {
             <a href="#home" className="flex items-center gap-3">
               <img src={logo} alt="Matru Bharati School" className="h-16 w-auto" />
               <div className="hidden sm:block">
-                <h1 className="font-serif text-xl font-bold text-primary leading-tight">
+                <h1 className="font-serif text-xl font-bold text-foreground leading-tight">
                   Matru Bharati
                 </h1>
                 <p className="text-xs text-muted-foreground font-medium tracking-wide">Coaching Classes</p>
@@ -57,7 +57,7 @@ const Header = () => {
                 <a
                   key={link.name}
                   href={link.href}
-                  className="text-foreground/80 hover:text-primary font-medium transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-secondary after:transition-all hover:after:w-full"
+                  className="text-foreground/80 hover:text-secondary font-medium transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-secondary after:transition-all hover:after:w-full"
                 >
                   {link.name}
                 </a>

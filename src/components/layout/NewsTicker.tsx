@@ -9,9 +9,9 @@ const NewsTicker = () => {
   ];
 
   return (
-    <div className="bg-secondary text-secondary-foreground py-2 overflow-hidden mt-[88px] md:mt-[128px]">
+    <div className="bg-secondary text-white py-2 overflow-hidden mt-[88px] md:mt-[128px]">
       <div className="container mx-auto px-4 flex items-center">
-        <div className="flex items-center gap-2 bg-primary px-3 py-1 rounded-full shrink-0 mr-4">
+        <div className="flex items-center gap-2 bg-foreground text-background px-3 py-1 rounded-full shrink-0 mr-4">
           <Bell className="h-4 w-4" />
           <span className="font-semibold text-sm">UPDATES</span>
         </div>

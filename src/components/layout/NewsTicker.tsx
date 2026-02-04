@@ -17,8 +17,8 @@ const NewsTicker = () => {
         </div>
         <div className="overflow-hidden flex-1">
           <div className="ticker-scroll whitespace-nowrap flex gap-8 sm:gap-16">
-            {[...announcements, ...announcements, ...announcements].map((text, index) => (
-              <span key={index} className="font-medium text-sm sm:text-base">
+            {[...announcements, ...announcements].map((text, index) => (
+              <span key={index} className="font-medium text-sm sm:text-base inline-block">
                 {text}
               </span>
             ))}

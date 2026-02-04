@@ -140,14 +140,14 @@
     );
   }
 
-  /* News ticker animation - smooth left to right scroll */
+  /* News ticker animation - seamless continuous scroll */
   @keyframes ticker-scroll {
     0% { transform: translateX(0); }
-    100% { transform: translateX(-33.333%); }
+    100% { transform: translateX(-50%); }
   }
 
   .ticker-scroll {
-    animation: ticker-scroll 2s linear infinite;
+    animation: ticker-scroll 20s linear infinite;
     will-change: transform;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;

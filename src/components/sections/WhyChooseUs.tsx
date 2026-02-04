@@ -82,13 +82,14 @@ const WhyChooseUs = () => {
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="inline-block px-4 py-1 bg-secondary/10 text-secondary rounded-full text-sm font-semibold mb-4">
+          <div className="accent-line mx-auto mb-6" />
+          <span className="inline-block px-4 py-2 bg-secondary/10 text-secondary rounded-full text-sm font-bold uppercase tracking-wider mb-4">
             Why Choose Us
           </span>
           <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-            Building <span className="text-primary">Tomorrow's Leaders</span> Today
+            Building <span className="text-gradient">Tomorrow's Leaders</span> Today
           </h2>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-lg leading-relaxed">
             At Matru Bharati, we combine academic excellence with discipline and care, 
             creating an environment where every child can thrive and succeed.
           </p>

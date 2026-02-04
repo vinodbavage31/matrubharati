@@ -147,7 +147,7 @@
   }
 
   .ticker-scroll {
-    animation: ticker-scroll 12s linear infinite;
+    animation: ticker-scroll 2s linear infinite;
     will-change: transform;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;

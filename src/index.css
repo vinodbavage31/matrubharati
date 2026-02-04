@@ -140,14 +140,21 @@
     );
   }
 
-  /* News ticker animation */
-  @keyframes ticker {
-    0% { transform: translateX(100%); }
-    100% { transform: translateX(-100%); }
+  /* News ticker animation - smooth left to right scroll */
+  @keyframes ticker-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-33.333%); }
   }
 
-  .animate-ticker {
-    animation: ticker 20s linear infinite;
+  .ticker-scroll {
+    animation: ticker-scroll 25s linear infinite;
+    will-change: transform;
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .ticker-scroll {
+      animation: none;
+    }
   }
 
   /* Floating animation for WhatsApp */

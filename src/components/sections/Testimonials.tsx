@@ -31,7 +31,7 @@ const Testimonials = () => {
             Parent Testimonials
           </span>
           <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-            Trusted by <span className="text-primary">Parents</span> Across the Region
+            Trusted by <span className="text-secondary">Parents</span> Across the Region
           </h2>
           <p className="text-muted-foreground text-lg">
             Hear from parents who have seen the transformation in their children.
@@ -59,8 +59,8 @@ const Testimonials = () => {
               </p>
               
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                  <span className="font-serif font-bold text-primary">
+                <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center">
+                  <span className="font-serif font-bold text-secondary">
                     {testimonial.name.charAt(0)}
                   </span>
                 </div>

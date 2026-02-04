@@ -21,7 +21,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer id="contact" className="bg-primary text-primary-foreground">
+    <footer id="contact" className="bg-foreground text-background">
       {/* Main Footer */}
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
@@ -31,10 +31,10 @@ const Footer = () => {
               <img src={logo} alt="Matru Bharati" className="h-20 w-auto bg-white rounded-full p-1" />
               <div>
                 <h3 className="font-serif text-xl font-bold">Matru Bharati</h3>
-                <p className="text-sm text-primary-foreground/70">Coaching Classes</p>
+                <p className="text-sm text-background/70">Coaching Classes</p>
               </div>
             </div>
-            <p className="text-primary-foreground/80 mb-6 leading-relaxed">
+            <p className="text-background/80 mb-6 leading-relaxed">
               Building tomorrow's leaders through discipline, dedication, and academic excellence. 
               Preparing students for success in competitive examinations.
             </p>
@@ -59,7 +59,7 @@ const Footer = () => {
                 <li key={link.name}>
                   <a
                     href={link.href}
-                    className="text-primary-foreground/70 hover:text-accent transition-colors"
+                    className="text-background/70 hover:text-accent transition-colors"
                   >
                     {link.name}
                   </a>
@@ -76,7 +76,7 @@ const Footer = () => {
                 <li key={link.name}>
                   <a
                     href={link.href}
-                    className="text-primary-foreground/70 hover:text-accent transition-colors"
+                    className="text-background/70 hover:text-accent transition-colors"
                   >
                     {link.name}
                   </a>
@@ -105,7 +105,7 @@ const Footer = () => {
               </li>
               <li className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-accent shrink-0 mt-0.5" />
-                <address className="not-italic text-primary-foreground/70 text-sm">
+                <address className="not-italic text-background/70 text-sm">
                   Near Laxmi Temple, Khatak Chincholi<br />
                   Tq: Bhalki, Dist: Bidar<br />
                   Karnataka, India
@@ -119,7 +119,7 @@ const Footer = () => {
       {/* Bottom Bar */}
       <div className="border-t border-white/10">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-primary-foreground/60">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-background/60">
             <p>© {currentYear} Matru Bharati School & Coaching Center. All rights reserved.</p>
             <p>Medium of Instruction: Kannada & English</p>
           </div>

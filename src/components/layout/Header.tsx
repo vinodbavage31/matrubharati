@@ -6,6 +6,11 @@ import logo from "@/assets/logo.png";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const handleLoginClick = () => {
+    setIsMenuOpen(false);
+  };
+
+
   const navLinks = [
     { name: "Home", href: "#home" },
     { name: "About", href: "#about" },
@@ -66,6 +71,9 @@ const Header = () => {
 
             {/* CTA Button */}
             <div className="hidden lg:flex items-center gap-4">
+              <Button variant="ghost" asChild>
+                <a href="/login">Login</a>
+              </Button>
               <Button variant="cta" size="lg" asChild>
                 <a href="#admissions">Apply Now</a>
               </Button>
@@ -99,6 +107,9 @@ const Header = () => {
               <div className="pt-4 border-t border-border mt-2">
                 <Button variant="cta" size="lg" className="w-full" asChild>
                   <a href="#admissions">Apply Now</a>
+                </Button>
+                <Button variant="ghost" className="w-full mt-2" asChild onClick={handleLoginClick}>
+                  <a href="/login">Login</a>
                 </Button>
                 <div className="flex items-center justify-center gap-4 mt-4 text-sm text-muted-foreground">
                   <a href="tel:9611215121" className="flex items-center gap-2">

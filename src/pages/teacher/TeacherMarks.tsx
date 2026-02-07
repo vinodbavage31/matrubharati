@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,106 +22,39 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Save } from "lucide-react";
-
-interface Student {
-  id: string;
-  name: string;
-  roll_number: string | null;
-}
-
-interface Subject {
-  id: string;
-  name: string;
-  total_marks: number | null;
-}
-
-interface ExamMonth {
-  id: string;
-  name: string;
-}
-
-interface MarkEntry {
-  student_id: string;
-  marks_obtained: number;
-}
+import { useTeacherData } from "@/hooks/useTeacherData";
+import { ClassSubjectSelector } from "@/components/teacher/ClassSubjectSelector";
 
 const TeacherMarks = () => {
-  const { user } = useAuth();
-  const [teacherId, setTeacherId] = useState<string | null>(null);
-  const [classId, setClassId] = useState<string | null>(null);
-  const [students, setStudents] = useState<Student[]>([]);
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [examMonths, setExamMonths] = useState<ExamMonth[]>([]);
-  const [selectedSubject, setSelectedSubject] = useState<string>("");
+  const {
+    teacherId,
+    assignedClasses,
+    assignedSubjects,
+    selectedClassId,
+    setSelectedClassId,
+    selectedSubjectId,
+    setSelectedSubjectId,
+    students,
+    examMonths,
+    loading,
+    hasMultipleClasses,
+  } = useTeacherData();
+
   const [selectedExam, setSelectedExam] = useState<string>("");
   const [marksData, setMarksData] = useState<Record<string, number>>({});
   const [existingMarks, setExistingMarks] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    const fetchTeacherData = async () => {
-      if (!user) return;
-
-      try {
-        const { data: teacher } = await supabase
-          .from("teachers")
-          .select("id, assigned_class_id")
-          .eq("user_id", user.id)
-          .single();
-
-        if (teacher) {
-          setTeacherId(teacher.id);
-          setClassId(teacher.assigned_class_id);
-
-          // Fetch students in assigned class
-          if (teacher.assigned_class_id) {
-            const { data: studentsData } = await supabase
-              .from("students")
-              .select("id, name, roll_number")
-              .eq("class_id", teacher.assigned_class_id)
-              .order("roll_number");
-            setStudents(studentsData || []);
-          }
-
-          // Fetch assigned subjects
-          const { data: teacherSubjects } = await supabase
-            .from("teacher_subjects")
-            .select("subjects(id, name, total_marks)")
-            .eq("teacher_id", teacher.id);
-
-          const subjectsList = teacherSubjects
-            ?.map((ts: any) => ts.subjects)
-            .filter(Boolean) || [];
-          setSubjects(subjectsList);
-
-          // Fetch exam months
-          const { data: exams } = await supabase
-            .from("exam_months")
-            .select("id, name")
-            .order("created_at", { ascending: false });
-          setExamMonths(exams || []);
-        }
-      } catch (error) {
-        console.error("Error fetching teacher data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTeacherData();
-  }, [user]);
 
   // Fetch existing marks when exam/subject changes
   useEffect(() => {
     const fetchExistingMarks = async () => {
-      if (!selectedExam || !selectedSubject || students.length === 0) return;
+      if (!selectedExam || !selectedSubjectId || students.length === 0) return;
 
       const { data } = await supabase
         .from("marks")
         .select("id, student_id, marks_obtained")
         .eq("exam_month_id", selectedExam)
-        .eq("subject_id", selectedSubject);
+        .eq("subject_id", selectedSubjectId);
 
       const marksMap: Record<string, number> = {};
       const idsMap: Record<string, string> = {};
@@ -139,7 +71,14 @@ const TeacherMarks = () => {
     };
 
     fetchExistingMarks();
-  }, [selectedExam, selectedSubject, students]);
+  }, [selectedExam, selectedSubjectId, students]);
+
+  // Reset selections when class changes
+  useEffect(() => {
+    setSelectedExam("");
+    setMarksData({});
+    setExistingMarks({});
+  }, [selectedClassId]);
 
   const handleMarksChange = (studentId: string, marks: string) => {
     const numMarks = parseInt(marks) || 0;
@@ -147,13 +86,13 @@ const TeacherMarks = () => {
   };
 
   const handleSave = async () => {
-    if (!selectedExam || !selectedSubject || !teacherId) {
+    if (!selectedExam || !selectedSubjectId || !teacherId) {
       toast.error("Please select exam and subject");
       return;
     }
 
     setSaving(true);
-    const selectedSubjectData = subjects.find((s) => s.id === selectedSubject);
+    const selectedSubjectData = assignedSubjects.find((s) => s.id === selectedSubjectId);
     const totalMarks = selectedSubjectData?.total_marks || 100;
 
     try {
@@ -162,7 +101,6 @@ const TeacherMarks = () => {
         const existingId = existingMarks[student.id];
 
         if (existingId) {
-          // Update
           return supabase
             .from("marks")
             .update({
@@ -171,10 +109,9 @@ const TeacherMarks = () => {
             })
             .eq("id", existingId);
         } else {
-          // Insert
           return supabase.from("marks").insert({
             student_id: student.id,
-            subject_id: selectedSubject,
+            subject_id: selectedSubjectId,
             exam_month_id: selectedExam,
             teacher_id: teacherId,
             marks_obtained: marksObtained,
@@ -206,11 +143,24 @@ const TeacherMarks = () => {
   return (
     <DashboardLayout role="teacher" title="Marks Entry">
       <div className="space-y-6">
+        {/* Class and Subject Selector */}
+        <ClassSubjectSelector
+          classes={assignedClasses}
+          subjects={assignedSubjects}
+          selectedClassId={selectedClassId}
+          selectedSubjectId={selectedSubjectId}
+          onClassChange={setSelectedClassId}
+          onSubjectChange={setSelectedSubjectId}
+          showSubjectSelector={true}
+          hasMultipleClasses={hasMultipleClasses}
+        />
+
         <Card>
           <CardHeader>
             <CardTitle>Enter Student Marks</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Exam Month Selector */}
             <div className="flex flex-wrap gap-4">
               <div className="w-48">
                 <Label>Exam Month</Label>
@@ -225,27 +175,17 @@ const TeacherMarks = () => {
                   </SelectContent>
                 </Select>
               </div>
-
-              <div className="w-48">
-                <Label>Subject</Label>
-                <Select value={selectedSubject} onValueChange={setSelectedSubject}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select subject" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {subjects.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
-            {students.length === 0 ? (
+            {!selectedClassId && hasMultipleClasses ? (
               <div className="text-center py-8 text-muted-foreground">
-                No students found in your assigned class
+                Please select a class first
               </div>
-            ) : !selectedExam || !selectedSubject ? (
+            ) : students.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No students found in this class
+              </div>
+            ) : !selectedExam || !selectedSubjectId ? (
               <div className="text-center py-8 text-muted-foreground">
                 Please select an exam and subject to enter marks
               </div>
@@ -270,14 +210,14 @@ const TeacherMarks = () => {
                             <Input
                               type="number"
                               min="0"
-                              max={subjects.find((s) => s.id === selectedSubject)?.total_marks || 100}
-                              value={marksData[student.id] || ""}
+                              max={assignedSubjects.find((s) => s.id === selectedSubjectId)?.total_marks || 100}
+                              value={marksData[student.id] ?? ""}
                               onChange={(e) => handleMarksChange(student.id, e.target.value)}
                               className="w-24"
                             />
                           </TableCell>
                           <TableCell>
-                            {subjects.find((s) => s.id === selectedSubject)?.total_marks || 100}
+                            {assignedSubjects.find((s) => s.id === selectedSubjectId)?.total_marks || 100}
                           </TableCell>
                         </TableRow>
                       ))}

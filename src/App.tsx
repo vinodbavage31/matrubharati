@@ -9,6 +9,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 // Public pages
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import SetPassword from "./pages/SetPassword";
 import NotFound from "./pages/NotFound";
 
 // Admin pages
@@ -46,6 +47,7 @@ const App = () => (
             {/* Public routes */}
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/set-password" element={<SetPassword />} />
 
             {/* Admin routes */}
             <Route

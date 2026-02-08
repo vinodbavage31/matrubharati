@@ -10,6 +10,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import SetPassword from "./pages/SetPassword";
+import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
 
 // Admin pages
@@ -33,7 +34,7 @@ import StudentMarks from "./pages/student/StudentMarks";
 import StudentRankings from "./pages/student/StudentRankings";
 import StudentAttendance from "./pages/student/StudentAttendance";
 import StudentProgress from "./pages/student/StudentProgress";
-
+import StudentSettings from "./pages/student/StudentSettings";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/set-password" element={<SetPassword />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
 
             {/* Admin routes */}
             <Route
@@ -182,7 +184,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-
+            <Route
+              path="/student/settings"
+              element={
+                <ProtectedRoute allowedRoles={["student", "parent"]}>
+                  <StudentSettings />
+                </ProtectedRoute>
+              }
+            />
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>

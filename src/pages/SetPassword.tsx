@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Eye, EyeOff, ArrowLeft, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, CheckCircle, Loader2 } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const SetPassword = () => {
@@ -15,23 +15,79 @@ const SetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [isValidToken, setIsValidToken] = useState(true);
+  const [isValidToken, setIsValidToken] = useState<boolean | null>(null);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    // Check if user came from an invite/recovery link
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      setIsCheckingSession(true);
       
-      // If no session and no hash in URL, redirect to login
-      if (!session && !window.location.hash.includes("access_token")) {
-        setIsValidToken(false);
+      // Check if there's an access token in the URL (from email invite)
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get("access_token");
+      const refreshToken = hashParams.get("refresh_token");
+      const type = hashParams.get("type");
+      
+      if (accessToken && refreshToken) {
+        // Set the session from the URL tokens
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+        
+        if (error) {
+          console.error("Session error:", error);
+          setIsValidToken(false);
+        } else {
+          setIsValidToken(true);
+        }
+        
+        // Clear the hash from URL for cleaner look
+        window.history.replaceState(null, "", window.location.pathname);
+      } else {
+        // Check for existing session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          setIsValidToken(true);
+        } else {
+          setIsValidToken(false);
+        }
       }
+      
+      setIsCheckingSession(false);
     };
 
     checkSession();
   }, []);
+
+  const getDashboardPath = async (userId: string): Promise<string> => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", userId)
+        .single();
+
+      if (error || !data) {
+        return "/login";
+      }
+
+      switch (data.role) {
+        case "admin":
+          return "/admin";
+        case "teacher":
+          return "/teacher";
+        case "student":
+        case "parent":
+          return "/student";
+        default:
+          return "/login";
+      }
+    } catch {
+      return "/login";
+    }
+  };
 
   const handleSetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +105,7 @@ const SetPassword = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
+      const { data, error } = await supabase.auth.updateUser({
         password: password,
       });
 
@@ -58,12 +114,19 @@ const SetPassword = () => {
       }
 
       setIsSuccess(true);
-      toast.success("Password set successfully!");
+      toast.success("Password set successfully! Redirecting to dashboard...");
       
-      // Redirect to login after 2 seconds
-      setTimeout(() => {
-        navigate("/login");
-      }, 2000);
+      // Get the user's role and redirect to appropriate dashboard
+      if (data.user) {
+        const dashboardPath = await getDashboardPath(data.user.id);
+        setTimeout(() => {
+          navigate(dashboardPath);
+        }, 1500);
+      } else {
+        setTimeout(() => {
+          navigate("/login");
+        }, 1500);
+      }
     } catch (error: any) {
       console.error("Error setting password:", error);
       toast.error(error.message || "Failed to set password");
@@ -72,7 +135,18 @@ const SetPassword = () => {
     }
   };
 
-  if (!isValidToken) {
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-secondary" />
+          <p className="text-muted-foreground">Verifying your link...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isValidToken === false) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex flex-col">
         <header className="p-4">
@@ -118,9 +192,9 @@ const SetPassword = () => {
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">Password Set Successfully!</h2>
             <p className="text-muted-foreground mb-4">
-              Redirecting you to the login page...
+              Redirecting you to your dashboard...
             </p>
-            <div className="h-8 w-8 border-4 border-secondary border-t-transparent rounded-full animate-spin mx-auto" />
+            <Loader2 className="h-8 w-8 animate-spin mx-auto text-secondary" />
           </CardContent>
         </Card>
       </div>
@@ -209,7 +283,7 @@ const SetPassword = () => {
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
                     "Set Password"
                   )}

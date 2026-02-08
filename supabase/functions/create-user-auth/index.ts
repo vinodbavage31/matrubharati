@@ -29,9 +29,18 @@ serve(async (req: Request) => {
     }
 
     // Create Supabase client with user's token
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const anonKey = Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+
+    if (!supabaseUrl || !supabaseKey || !anonKey) {
+      console.error("Missing environment variables:", {
+        hasUrl: !!supabaseUrl,
+        hasServiceKey: !!supabaseKey,
+        hasAnonKey: !!anonKey,
+      });
+      throw new Error("Server configuration error: Missing Supabase credentials");
+    }
 
     // Verify the requesting user is an admin
     const userClient = createClient(supabaseUrl, anonKey, {

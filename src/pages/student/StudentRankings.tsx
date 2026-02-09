@@ -66,7 +66,7 @@ const StudentRankings = () => {
         if (students?.[0]) {
           setStudentId(students[0].id);
           setClassId(students[0].class_id);
-          setClassName(students[0].classes?.name || "");
+          setClassName((students[0].classes as any)?.name || "");
         }
 
         // Get exam months
@@ -146,8 +146,8 @@ const StudentRankings = () => {
         }
       });
 
-      // Sort by percentage and create rankings
-      const rankingsArr = Object.entries(studentTotals)
+      // Sort by percentage (highest first)
+      const sortedStudents = Object.entries(studentTotals)
         .map(([id, data]) => ({
           studentId: id,
           student_name: data.name,
@@ -159,8 +159,25 @@ const StudentRankings = () => {
           rank: 0,
           isCurrentStudent: id === studentId,
         }))
-        .sort((a, b) => b.percentage - a.percentage)
-        .map((s, idx) => ({ ...s, rank: idx + 1 }));
+        .sort((a, b) => b.percentage - a.percentage);
+
+      // Calculate ranks with proper tie handling
+      // Example: 95, 95, 90 → Rank 1, 1, 3
+      let currentRank = 1;
+      let studentsAtCurrentRank = 0;
+      let previousPercentage: number | null = null;
+
+      const rankingsArr = sortedStudents.map((student, index) => {
+        if (previousPercentage === null || student.percentage < previousPercentage) {
+          currentRank = index + 1;
+          studentsAtCurrentRank = 1;
+        } else {
+          studentsAtCurrentRank++;
+        }
+        previousPercentage = student.percentage;
+        
+        return { ...student, rank: currentRank };
+      });
 
       setRankings(rankingsArr);
       
@@ -191,6 +208,13 @@ const StudentRankings = () => {
     if (rank === 1) return "default";
     if (rank <= 3) return "secondary";
     return "outline";
+  };
+
+  const getPercentageColor = (percentage: number): string => {
+    if (percentage >= 80) return "text-green-600 dark:text-green-400";
+    if (percentage >= 60) return "text-blue-600 dark:text-blue-400";
+    if (percentage >= 40) return "text-yellow-600 dark:text-yellow-400";
+    return "text-red-600 dark:text-red-400";
   };
 
   return (
@@ -310,12 +334,7 @@ const StudentRankings = () => {
                           {r.total_marks}/{r.max_marks}
                         </TableCell>
                         <TableCell className="text-right">
-                          <span className={`font-bold ${
-                            r.percentage >= 80 ? "text-green-600" :
-                            r.percentage >= 60 ? "text-blue-600" :
-                            r.percentage >= 40 ? "text-yellow-600" :
-                            "text-red-600"
-                          }`}>
+                          <span className={`font-bold ${getPercentageColor(r.percentage)}`}>
                             {r.percentage}%
                           </span>
                         </TableCell>
@@ -328,7 +347,7 @@ const StudentRankings = () => {
 
             <p className="mt-4 text-sm text-muted-foreground">
               Note: Rankings are calculated based on total percentage across all subjects. 
-              Subject-wise marks of other students are kept private.
+              Students with the same percentage share the same rank. Subject-wise marks of other students are kept private.
             </p>
           </CardContent>
         </Card>

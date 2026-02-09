@@ -9,6 +9,9 @@ import { toast } from "sonner";
 import { ArrowLeft, Mail, CheckCircle, Loader2 } from "lucide-react";
 import logo from "@/assets/logo.png";
 
+// Production URL for auth redirects
+const PRODUCTION_URL = "https://matrubharati.vercel.app";
+
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -20,7 +23,7 @@ const ForgotPassword = () => {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/set-password`,
+        redirectTo: `${PRODUCTION_URL}/set-password`,
       });
 
       if (error) {
@@ -53,7 +56,7 @@ const ForgotPassword = () => {
         <main className="flex-1 flex items-center justify-center p-4">
           <Card className="w-full max-w-md shadow-lg">
             <CardContent className="pt-6 text-center">
-              <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+              <CheckCircle className="h-16 w-16 text-green-600 dark:text-green-400 mx-auto mb-4" />
               <h2 className="text-xl font-semibold mb-2">Check Your Email</h2>
               <p className="text-muted-foreground mb-4">
                 We've sent a password reset link to <strong>{email}</strong>. 

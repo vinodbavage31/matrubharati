@@ -78,8 +78,8 @@ serve(async (req: Request) => {
       },
     });
 
-    // Get the origin for redirect URL
-    const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || "";
+    // Use Vercel production URL for redirects
+    const PRODUCTION_URL = "https://matrubharati.vercel.app";
 
     // Generate invite link (user will set their own password)
     const { data: authData, error: authError } = await adminClient.auth.admin.inviteUserByEmail(
@@ -89,7 +89,7 @@ serve(async (req: Request) => {
           full_name: fullName,
           role: role,
         },
-        redirectTo: `${origin}/set-password`,
+        redirectTo: `${PRODUCTION_URL}/set-password`,
       }
     );
 

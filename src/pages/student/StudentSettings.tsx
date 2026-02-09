@@ -77,8 +77,10 @@ const StudentSettings = () => {
     setIsResettingPassword(true);
 
     try {
+      // Use Vercel production URL for redirects
+      const PRODUCTION_URL = "https://matrubharati.vercel.app";
       const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-        redirectTo: `${window.location.origin}/set-password`,
+        redirectTo: `${PRODUCTION_URL}/set-password`,
       });
 
       if (error) {
@@ -217,7 +219,7 @@ const StudentSettings = () => {
           <CardContent>
             {resetEmailSent ? (
               <div className="text-center py-4">
-                <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
+                <CheckCircle className="h-12 w-12 text-green-600 dark:text-green-400 mx-auto mb-3" />
                 <p className="font-medium mb-2">Reset Email Sent!</p>
                 <p className="text-sm text-muted-foreground mb-4">
                   Check your inbox for a password reset link.

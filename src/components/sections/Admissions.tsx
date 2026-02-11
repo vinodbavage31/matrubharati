@@ -62,11 +62,11 @@ const Admissions = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a
-                  href="tel:9611215121"
+                  href="tel:9611915336"
                   className="inline-flex items-center justify-center gap-2 bg-white text-primary font-bold px-8 py-4 rounded-lg hover:bg-white/90 transition-all"
                 >
                   <Phone className="h-5 w-5" />
-                  Call Now: +91 9611215121
+                  Call Now: +91 9611915336
                 </a>
               </div>
             </div>
@@ -137,8 +137,8 @@ const Admissions = () => {
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground mb-1">Phone / WhatsApp</h4>
-                    <a href="tel:9611215121" className="text-muted-foreground hover:text-secondary transition-colors">
-                      +91 9611215121
+                    <a href="tel:9611915336" className="text-muted-foreground hover:text-secondary transition-colors">
+                      +91 9611915336
                     </a>
                     <p className="text-xs text-muted-foreground mt-1">Available 9 AM - 9 PM</p>
                   </div>

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Award, Users, BookOpen } from "lucide-react";
-import heroCampus from "@/assets/hero-campus.jpg";
+import heroCampus from "@/assets/matrubharati-campus.png";
 
 const Hero = () => {
   return (

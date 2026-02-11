@@ -26,9 +26,9 @@ const Header = () => {
       <div className="bg-foreground text-background py-2 hidden md:block">
         <div className="container mx-auto px-4 flex justify-between items-center text-sm">
           <div className="flex items-center gap-6">
-            <a href="tel:9611215121" className="flex items-center gap-2 hover:text-accent transition-colors">
+            <a href="tel:9611915336" className="flex items-center gap-2 hover:text-accent transition-colors">
               <Phone className="h-4 w-4" />
-              <span>+91 9611215121</span>
+              <span>+91 9611915336</span>
             </a>
             <a href="mailto:info@matrubharati.com" className="flex items-center gap-2 hover:text-accent transition-colors">
               <Mail className="h-4 w-4" />
@@ -112,8 +112,8 @@ const Header = () => {
                   <a href="/login">Login</a>
                 </Button>
                 <div className="flex items-center justify-center gap-4 mt-4 text-sm text-muted-foreground">
-                  <a href="tel:9611215121" className="flex items-center gap-2">
-                    <Phone className="h-4 w-4" /> +91 9611215121
+                  <a href="tel:9611915336" className="flex items-center gap-2">
+                    <Phone className="h-4 w-4" /> +91 9611915336
                   </a>
                 </div>
               </div>

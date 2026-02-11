@@ -23,20 +23,44 @@ const Admissions = () => {
     message: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Form submitted:", formData);
-    setFormSubmitted(true);
-    setTimeout(() => setFormSubmitted(false), 5000);
-    setFormData({
-      parentName: "",
-      phone: "",
-      email: "",
-      childName: "",
-      currentClass: "",
-      message: ""
-    });
-  };
+const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+
+  const phoneNumber = "919611915336"; // Your WhatsApp number with country code
+
+  const whatsappMessage = `📞 *Request a Callback*
+
+👤 Parent/Guardian Name: ${formData.parentName}
+📱 Phone Number: ${formData.phone}
+📧 Email: ${formData.email}
+👦 Child's Name: ${formData.childName}
+🎓 Current Class: ${formData.currentClass}
+
+📝 Message: ${formData.message || "N/A"}
+`;
+
+  const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
+    whatsappMessage
+  )}`;
+
+  // Open WhatsApp
+  window.open(whatsappURL, "_blank");
+
+  // Optional: show success message
+  setFormSubmitted(true);
+  setTimeout(() => setFormSubmitted(false), 5000);
+
+  // Clear form
+  setFormData({
+    parentName: "",
+    phone: "",
+    email: "",
+    childName: "",
+    currentClass: "",
+    message: ""
+  });
+};
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

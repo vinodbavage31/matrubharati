@@ -65,6 +65,7 @@ const studentMenuItems: MenuItem[] = [
   { title: "Rankings", url: "/student/rankings", icon: Award },
   { title: "Attendance", url: "/student/attendance", icon: Calendar },
   { title: "Progress", url: "/student/progress", icon: TrendingUp },
+  { title: "Account Settings", url: "/student/settings", icon: Settings },
 ];
 
 const DashboardSidebar = ({ role }: DashboardSidebarProps) => {

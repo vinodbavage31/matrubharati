@@ -28,7 +28,8 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Plus, Pencil, Search } from "lucide-react";
+import { Plus, Pencil, Search, Mail, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface Student {
   id: string;
@@ -36,6 +37,9 @@ interface Student {
   roll_number: string | null;
   section: string | null;
   class_id: string | null;
+  email: string | null;
+  mobile: string | null;
+  user_id: string | null;
   classes?: { name: string } | null;
 }
 
@@ -52,6 +56,7 @@ const AdminStudents = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [creatingAuth, setCreatingAuth] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -59,6 +64,8 @@ const AdminStudents = () => {
     roll_number: "",
     class_id: "",
     section: "",
+    email: "",
+    mobile: "",
   });
 
   const fetchData = async () => {
@@ -85,10 +92,41 @@ const AdminStudents = () => {
     fetchData();
   }, []);
 
+  const createAuthAccount = async (entityId: string, name: string, email: string, role: "teacher" | "student") => {
+    setCreatingAuth(true);
+    try {
+      const response = await supabase.functions.invoke("create-user-auth", {
+        body: { email, fullName: name, role, entityId },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      if (response.data?.success) {
+        toast.success(response.data.message);
+      } else {
+        throw new Error(response.data?.error || "Failed to create auth account");
+      }
+    } catch (error: any) {
+      console.error("Error creating auth:", error);
+      toast.error(error.message || "Failed to send invitation email");
+    } finally {
+      setCreatingAuth(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!formData.email) {
+      toast.error("Email is required for student login");
+      return;
+    }
+
     try {
+      let studentId = editingStudent?.id;
+
       if (editingStudent) {
         const { error } = await supabase
           .from("students")
@@ -97,20 +135,31 @@ const AdminStudents = () => {
             roll_number: formData.roll_number || null,
             class_id: formData.class_id || null,
             section: formData.section || null,
+            email: formData.email || null,
+            mobile: formData.mobile || null,
           })
           .eq("id", editingStudent.id);
 
         if (error) throw error;
         toast.success("Student updated successfully");
       } else {
-        const { error } = await supabase.from("students").insert({
+        const { data, error } = await supabase.from("students").insert({
           name: formData.name,
           roll_number: formData.roll_number || null,
           class_id: formData.class_id || null,
           section: formData.section || null,
-        });
+          email: formData.email || null,
+          mobile: formData.mobile || null,
+        }).select().single();
 
         if (error) throw error;
+        studentId = data.id;
+
+        // Create auth account for new student
+        if (formData.email) {
+          await createAuthAccount(studentId, formData.name, formData.email, "student");
+        }
+
         toast.success("Student added successfully");
       }
 
@@ -123,8 +172,17 @@ const AdminStudents = () => {
     }
   };
 
+  const handleSendInvite = async (student: Student) => {
+    if (!student.email) {
+      toast.error("Student email is required");
+      return;
+    }
+    await createAuthAccount(student.id, student.name, student.email, "student");
+    fetchData();
+  };
+
   const resetForm = () => {
-    setFormData({ name: "", roll_number: "", class_id: "", section: "" });
+    setFormData({ name: "", roll_number: "", class_id: "", section: "", email: "", mobile: "" });
     setEditingStudent(null);
   };
 
@@ -135,6 +193,8 @@ const AdminStudents = () => {
       roll_number: student.roll_number || "",
       class_id: student.class_id || "",
       section: student.section || "",
+      email: student.email || "",
+      mobile: student.mobile || "",
     });
     setIsDialogOpen(true);
   };
@@ -142,7 +202,8 @@ const AdminStudents = () => {
   const filteredStudents = students.filter(
     (s) =>
       s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.roll_number?.toLowerCase().includes(searchQuery.toLowerCase())
+      s.roll_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -161,67 +222,100 @@ const AdminStudents = () => {
                   Add Student
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-w-xl">
                 <DialogHeader>
                   <DialogTitle>
                     {editingStudent ? "Edit Student" : "Add New Student"}
                   </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Student Name *</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                      required
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Student Name *</Label>
+                      <Input
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="roll_number">Roll Number</Label>
+                      <Input
+                        id="roll_number"
+                        value={formData.roll_number}
+                        onChange={(e) =>
+                          setFormData({ ...formData, roll_number: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="class">Class</Label>
+                      <Select
+                        value={formData.class_id}
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, class_id: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select class" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {classes.map((c) => (
+                            <SelectItem key={c.id} value={c.id}>
+                              {c.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="section">Section</Label>
+                      <Input
+                        id="section"
+                        value={formData.section}
+                        onChange={(e) =>
+                          setFormData({ ...formData, section: e.target.value })
+                        }
+                        placeholder="e.g., A, B, C"
+                      />
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="roll_number">Roll Number</Label>
-                    <Input
-                      id="roll_number"
-                      value={formData.roll_number}
-                      onChange={(e) =>
-                        setFormData({ ...formData, roll_number: e.target.value })
-                      }
-                    />
-                  </div>
+                  {/* Contact Section */}
+                  <div className="border-t pt-4">
+                    <h3 className="text-sm font-medium mb-3">Contact Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email (required for login) *</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) =>
+                            setFormData({ ...formData, email: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="class">Class</Label>
-                    <Select
-                      value={formData.class_id}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, class_id: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select class" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {classes.map((c) => (
-                          <SelectItem key={c.id} value={c.id}>
-                            {c.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="section">Section</Label>
-                    <Input
-                      id="section"
-                      value={formData.section}
-                      onChange={(e) =>
-                        setFormData({ ...formData, section: e.target.value })
-                      }
-                      placeholder="e.g., A, B, C"
-                    />
+                      <div className="space-y-2">
+                        <Label htmlFor="mobile">Mobile Number</Label>
+                        <Input
+                          id="mobile"
+                          value={formData.mobile}
+                          onChange={(e) =>
+                            setFormData({ ...formData, mobile: e.target.value })
+                          }
+                          placeholder="Optional"
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   <div className="flex justify-end gap-2 pt-4">
@@ -262,7 +356,7 @@ const AdminStudents = () => {
                 No students found
               </div>
             ) : (
-              <div className="rounded-md border">
+              <div className="rounded-md border overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -270,7 +364,9 @@ const AdminStudents = () => {
                       <TableHead>Roll Number</TableHead>
                       <TableHead>Class</TableHead>
                       <TableHead>Section</TableHead>
-                      <TableHead className="w-[80px]">Actions</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="w-[120px]">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -280,14 +376,41 @@ const AdminStudents = () => {
                         <TableCell>{student.roll_number || "-"}</TableCell>
                         <TableCell>{student.classes?.name || "-"}</TableCell>
                         <TableCell>{student.section || "-"}</TableCell>
+                        <TableCell>{student.email || "-"}</TableCell>
                         <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openEditDialog(student)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
+                          {student.user_id ? (
+                            <Badge className="bg-green-500 hover:bg-green-600">Active</Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-amber-600 border-amber-600">
+                              Pending
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openEditDialog(student)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            {!student.user_id && student.email && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleSendInvite(student)}
+                                disabled={creatingAuth}
+                                title="Send invitation email"
+                              >
+                                {creatingAuth ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Mail className="h-4 w-4" />
+                                )}
+                              </Button>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}

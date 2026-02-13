@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,17 +22,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Save } from "lucide-react";
-
-interface Student {
-  id: string;
-  name: string;
-  roll_number: string | null;
-}
-
-interface AttendanceEntry {
-  present_days: number;
-  total_working_days: number;
-}
+import { useTeacherData } from "@/hooks/useTeacherData";
+import { ClassSubjectSelector } from "@/components/teacher/ClassSubjectSelector";
 
 const months = [
   "January", "February", "March", "April", "May", "June",
@@ -41,51 +31,31 @@ const months = [
 ];
 
 const TeacherAttendance = () => {
-  const { user } = useAuth();
-  const [teacherId, setTeacherId] = useState<string | null>(null);
-  const [students, setStudents] = useState<Student[]>([]);
+  const {
+    teacherId,
+    assignedClasses,
+    assignedSubjects,
+    selectedClassId,
+    setSelectedClassId,
+    students,
+    loading,
+    hasMultipleClasses,
+  } = useTeacherData();
+
   const [selectedMonth, setSelectedMonth] = useState<string>("");
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
   const [totalWorkingDays, setTotalWorkingDays] = useState<number>(22);
   const [attendanceData, setAttendanceData] = useState<Record<string, number>>({});
   const [existingIds, setExistingIds] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - 2 + i).toString());
 
+  // Reset attendance data when class changes
   useEffect(() => {
-    const fetchTeacherData = async () => {
-      if (!user) return;
-
-      try {
-        const { data: teacher } = await supabase
-          .from("teachers")
-          .select("id, assigned_class_id")
-          .eq("user_id", user.id)
-          .single();
-
-        if (teacher) {
-          setTeacherId(teacher.id);
-
-          if (teacher.assigned_class_id) {
-            const { data: studentsData } = await supabase
-              .from("students")
-              .select("id, name, roll_number")
-              .eq("class_id", teacher.assigned_class_id)
-              .order("roll_number");
-            setStudents(studentsData || []);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTeacherData();
-  }, [user]);
+    setAttendanceData({});
+    setExistingIds({});
+  }, [selectedClassId]);
 
   // Fetch existing attendance when month/year changes
   useEffect(() => {
@@ -179,6 +149,16 @@ const TeacherAttendance = () => {
   return (
     <DashboardLayout role="teacher" title="Attendance Management">
       <div className="space-y-6">
+        {/* Class Selector */}
+        <ClassSubjectSelector
+          classes={assignedClasses}
+          subjects={assignedSubjects}
+          selectedClassId={selectedClassId}
+          onClassChange={setSelectedClassId}
+          showSubjectSelector={false}
+          hasMultipleClasses={hasMultipleClasses}
+        />
+
         <Card>
           <CardHeader>
             <CardTitle>Mark Attendance</CardTitle>
@@ -225,9 +205,13 @@ const TeacherAttendance = () => {
               </div>
             </div>
 
-            {students.length === 0 ? (
+            {!selectedClassId && hasMultipleClasses ? (
               <div className="text-center py-8 text-muted-foreground">
-                No students found in your assigned class
+                Please select a class first
+              </div>
+            ) : students.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No students found in this class
               </div>
             ) : !selectedMonth || !selectedYear ? (
               <div className="text-center py-8 text-muted-foreground">
@@ -261,7 +245,7 @@ const TeacherAttendance = () => {
                                 type="number"
                                 min="0"
                                 max={totalWorkingDays}
-                                value={attendanceData[student.id] || ""}
+                                value={attendanceData[student.id] ?? ""}
                                 onChange={(e) => handleAttendanceChange(student.id, e.target.value)}
                                 className="w-24"
                               />

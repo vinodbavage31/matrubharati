@@ -171,13 +171,18 @@ const Login = () => {
             </CardContent>
           </Card>
 
-          {/* Footer */}
-          <p className="text-center text-sm text-muted-foreground">
-            Having trouble signing in?{" "}
-            <a href="mailto:support@matrubharati.edu" className="text-secondary hover:underline">
-              Contact Support
-            </a>
-          </p>
+          {/* Forgot Password Link */}
+          <div className="text-center space-y-2">
+            <Link to="/forgot-password" className="text-sm text-secondary hover:underline">
+              Forgot your password?
+            </Link>
+            <p className="text-sm text-muted-foreground">
+              Having trouble signing in?{" "}
+              <a href="mailto:support@matrubharati.edu" className="text-secondary hover:underline">
+                Contact Support
+              </a>
+            </p>
+          </div>
         </div>
       </main>
     </div>

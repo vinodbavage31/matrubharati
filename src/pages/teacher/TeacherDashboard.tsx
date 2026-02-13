@@ -3,18 +3,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import StatCard from "@/components/dashboard/StatCard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, BookOpen, GraduationCap, Calendar } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
+interface TeacherInfo {
+  name: string;
+  email: string | null;
+  assignedClasses: { id: string; name: string }[];
+  assignedSubjects: { id: string; name: string }[];
+  totalStudents: number;
+}
 
 const TeacherDashboard = () => {
   const { user } = useAuth();
-  const [stats, setStats] = useState({
-    assignedClass: "N/A",
-    assignedSubject: "N/A",
-    totalStudents: 0,
-    currentExam: "N/A",
-  });
   const [loading, setLoading] = useState(true);
+  const [teacherInfo, setTeacherInfo] = useState<TeacherInfo | null>(null);
+  const [currentExam, setCurrentExam] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTeacherData = async () => {
@@ -24,46 +29,63 @@ const TeacherDashboard = () => {
         // Get teacher record
         const { data: teacher } = await supabase
           .from("teachers")
-          .select("*, classes(name)")
+          .select("id, name, email")
           .eq("user_id", user.id)
           .single();
 
-        if (teacher) {
-          // Get assigned subjects
-          const { data: teacherSubjects } = await supabase
-            .from("teacher_subjects")
-            .select("subjects(name)")
-            .eq("teacher_id", teacher.id);
-
-          // Count students in assigned class
-          let studentCount = 0;
-          if (teacher.assigned_class_id) {
-            const { count } = await supabase
-              .from("students")
-              .select("id", { count: "exact", head: true })
-              .eq("class_id", teacher.assigned_class_id);
-            studentCount = count || 0;
-          }
-
-          // Get current exam
-          const { data: exams } = await supabase
-            .from("exam_months")
-            .select("name")
-            .eq("is_active", true)
-            .limit(1);
-
-          const subjectNames = teacherSubjects
-            ?.map((ts: any) => ts.subjects?.name)
-            .filter(Boolean)
-            .join(", ") || "None assigned";
-
-          setStats({
-            assignedClass: teacher.classes?.name || "Not assigned",
-            assignedSubject: subjectNames,
-            totalStudents: studentCount,
-            currentExam: exams?.[0]?.name || "No active exam",
-          });
+        if (!teacher) {
+          setLoading(false);
+          return;
         }
+
+        // Fetch assigned classes
+        const { data: classAssignments } = await supabase
+          .from("teacher_classes")
+          .select("class_id, classes(id, name)")
+          .eq("teacher_id", teacher.id);
+
+        const classes = (classAssignments || [])
+          .map((ca: any) => ca.classes)
+          .filter(Boolean);
+
+        // Fetch assigned subjects
+        const { data: subjectAssignments } = await supabase
+          .from("teacher_subjects")
+          .select("subject_id, subjects(id, name)")
+          .eq("teacher_id", teacher.id);
+
+        const subjects = (subjectAssignments || [])
+          .map((sa: any) => sa.subjects)
+          .filter(Boolean);
+
+        // Count total students in assigned classes
+        let totalStudents = 0;
+        if (classes.length > 0) {
+          const classIds = classes.map((c: any) => c.id);
+          const { count } = await supabase
+            .from("students")
+            .select("id", { count: "exact", head: true })
+            .in("class_id", classIds);
+          totalStudents = count || 0;
+        }
+
+        // Get current exam
+        const { data: examData } = await supabase
+          .from("exam_months")
+          .select("name")
+          .eq("is_active", true)
+          .limit(1)
+          .single();
+
+        setTeacherInfo({
+          name: teacher.name,
+          email: teacher.email,
+          assignedClasses: classes,
+          assignedSubjects: subjects,
+          totalStudents,
+        });
+        setCurrentExam(examData?.name || null);
+
       } catch (error) {
         console.error("Error fetching teacher data:", error);
       } finally {
@@ -74,52 +96,92 @@ const TeacherDashboard = () => {
     fetchTeacherData();
   }, [user]);
 
+  if (loading) {
+    return (
+      <DashboardLayout role="teacher" title="Dashboard">
+        <div className="flex items-center justify-center py-12">
+          <div className="h-8 w-8 border-4 border-secondary border-t-transparent rounded-full animate-spin" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout role="teacher" title="Dashboard">
       <div className="space-y-6">
+        {/* Welcome Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Welcome, {teacherInfo?.name || "Teacher"}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              Manage your classes, enter marks, and track student attendance from this dashboard.
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            title="Assigned Class"
-            value={loading ? "..." : stats.assignedClass}
-            icon={GraduationCap}
-          />
-          <StatCard
-            title="Assigned Subject"
-            value={loading ? "..." : stats.assignedSubject}
+            title="Assigned Classes"
+            value={teacherInfo?.assignedClasses.length || 0}
             icon={BookOpen}
           />
           <StatCard
+            title="Assigned Subjects"
+            value={teacherInfo?.assignedSubjects.length || 0}
+            icon={GraduationCap}
+          />
+          <StatCard
             title="Total Students"
-            value={loading ? "..." : stats.totalStudents}
+            value={teacherInfo?.totalStudents || 0}
             icon={Users}
           />
           <StatCard
             title="Current Exam"
-            value={loading ? "..." : stats.currentExam}
+            value={currentExam || "None"}
             icon={Calendar}
           />
         </div>
 
+        {/* Assignments Overview */}
         <div className="grid gap-4 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Quick Actions</CardTitle>
+              <CardTitle className="text-base">Assigned Classes</CardTitle>
             </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              <p>Use the sidebar to enter marks and manage attendance for your assigned class.</p>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {teacherInfo?.assignedClasses.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">No classes assigned yet.</p>
+                ) : (
+                  teacherInfo?.assignedClasses.map((c) => (
+                    <Badge key={c.id} variant="outline" className="text-sm">
+                      {c.name}
+                    </Badge>
+                  ))
+                )}
+              </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Important Notes</CardTitle>
+              <CardTitle className="text-base">Assigned Subjects</CardTitle>
             </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              <ul className="list-disc list-inside space-y-1">
-                <li>Only enter marks for your assigned subjects</li>
-                <li>Attendance must be updated monthly</li>
-                <li>Rankings are auto-calculated</li>
-              </ul>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {teacherInfo?.assignedSubjects.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">No subjects assigned yet.</p>
+                ) : (
+                  teacherInfo?.assignedSubjects.map((s) => (
+                    <Badge key={s.id} variant="secondary" className="text-sm">
+                      {s.name}
+                    </Badge>
+                  ))
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>

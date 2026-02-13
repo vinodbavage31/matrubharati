@@ -256,7 +256,9 @@ export type Database = {
         Row: {
           class_id: string | null
           created_at: string | null
+          email: string | null
           id: string
+          mobile: string | null
           name: string
           parent_id: string | null
           roll_number: string | null
@@ -267,7 +269,9 @@ export type Database = {
         Insert: {
           class_id?: string | null
           created_at?: string | null
+          email?: string | null
           id?: string
+          mobile?: string | null
           name: string
           parent_id?: string | null
           roll_number?: string | null
@@ -278,7 +282,9 @@ export type Database = {
         Update: {
           class_id?: string | null
           created_at?: string | null
+          email?: string | null
           id?: string
+          mobile?: string | null
           name?: string
           parent_id?: string | null
           roll_number?: string | null
@@ -324,6 +330,42 @@ export type Database = {
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teacher_classes: {
+        Row: {
+          class_id: string
+          created_at: string | null
+          id: string
+          teacher_id: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string | null
+          id?: string
+          teacher_id: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string | null
+          id?: string
+          teacher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teacher_classes_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_classes_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
             referencedColumns: ["id"]
           },
         ]
@@ -405,12 +447,24 @@ export type Database = {
     }
     Functions: {
       get_student_id: { Args: { user_id: string }; Returns: string }
+      get_teacher_class_ids: {
+        Args: { teacher_user_id: string }
+        Returns: string[]
+      }
       get_teacher_id: { Args: { user_id: string }; Returns: string }
       get_user_role: {
         Args: { user_id: string }
         Returns: Database["public"]["Enums"]["user_role"]
       }
       is_admin: { Args: { user_id: string }; Returns: boolean }
+      teacher_has_class: {
+        Args: { check_class_id: string; teacher_user_id: string }
+        Returns: boolean
+      }
+      teacher_has_subject: {
+        Args: { check_subject_id: string; teacher_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       user_role: "admin" | "teacher" | "student" | "parent"
